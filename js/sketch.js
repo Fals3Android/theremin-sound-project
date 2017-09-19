@@ -1,21 +1,43 @@
-//set global variables
-var fft;
-var pitch;
-var osc;
-var y = 100;
-var x = 400;
-//jquery variables
-var screenWidth = $(window).width();
-var screenHeight = $(window).height();
-//set canvas as variable screen width with jquery screen variable in function setup()
+var fft, osc, canvas, pitch = 100;
+
+var screenWidth = $(window).width(),
+	screenHeight = $(window).height();
+
+/* Initiate */
 function setup() {
-	var cnv = createCanvas(screenWidth,screenHeight);
-	cnv.mousePressed(mouseDragged).mouseReleased(pitchEnd);
-	osc = new p5.Oscillator(y);
+	canvas = createCanvas( screenWidth, screenHeight, P2D);
+
+	osc = new p5.Oscillator(100);
 	osc.start();
+
+	canvas.mousePressed( mouseDragged );
+	canvas.mouseReleased( mouseReleased );
+
 	fft = new p5.FFT();
+
+	resizePlayArea();
 }
 
+function mouseDragged() {
+	pitchRange = ( 800 - 439 ) / screenHeight;
+	pitch = ( screenHeight - mouseY ) * pitchRange + 439;
+
+	ampRange = (.9) / screenWidth;
+  	amplitude = (screenWidth - mouseX ) * ampRange;
+  	
+	osc.freqNode.value = pitch;
+  	osc.output.gain.value = amplitude;
+}
+
+function mouseReleased(){
+	osc.freqNode.value = 0;
+}
+
+function resizePlayArea() {
+	$(window).resize(function() {
+		resizeCanvas($(window).width(), $(window).height());
+	});
+}
 
 // draw the assets
 function draw(){
@@ -71,42 +93,3 @@ function draw(){
   text(pitchText, 100, 100);
   pop();
 }
-if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) == false ) {
-function mouseDragged() {
-//math function that controls pitch
-	pitchRange = (1200-439)/screenWidth;
-	pitch = (screenWidth - mouseX)*pitchRange+439;
-	osc.freq(pitch);
-//math function that controls amplitude
-  volumeRange = (.9)/screenHeight;
-  volume = (screenHeight - mouseY )*volumeRange;
-  osc.amp(volume);
-}
-}
-else if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) == true ){
-function touchMoved() {
-//math function that controls pitch
-  pitchRange = (1200-439)/screenWidth;
-  pitch = (screenWidth - touchX)*pitchRange+439;
-  osc.freq(pitch);
-//math function that controls amplitude
-  volumeRange = (.9)/screenHeight;
-  volume = (screenHeight - touchY )*volumeRange;
-  osc.amp(volume);
-}
-}
-function pitchEnd(){
-//mouse event that turns off the oscillator
-	osc.freq(0);
-}
-
-
-
-
-
-
-
-
-
-
-
