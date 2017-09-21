@@ -1,112 +1,105 @@
-//set global variables
-var fft;
-var pitch;
-var osc;
-var y = 100;
-var x = 400;
-//jquery variables
-var screenWidth = $(window).width();
-var screenHeight = $(window).height();
-//set canvas as variable screen width with jquery screen variable in function setup()
+var fft, osc, canvas, currentPitch, minPitch = 0, maxPitch = 3000;
+
+var screenWidth = $(window).width(),
+	screenHeight = $(window).height();
+
+$(window).resize(function() {
+	screenWidth = $(window).width();
+	screenHeight = $(window).height();
+});
+
+/* Initiate */
 function setup() {
-	var cnv = createCanvas(screenWidth,screenHeight);
-	cnv.mousePressed(mouseDragged).mouseReleased(pitchEnd);
-	osc = new p5.Oscillator(y);
+	canvas = createCanvas( screenWidth, screenHeight, P2D);
+	noCursor();
+
+	osc = new p5.Oscillator(minPitch);
 	osc.start();
+
+	canvas.mousePressed( mouseDragged );
+	canvas.mouseReleased( mouseReleased );
+
 	fft = new p5.FFT();
+
+	resizePlayArea();
 }
 
-
-// draw the assets
 function draw(){
-//background
 	background("rgba(380,380,380,.5)");
-//antenna
+	/* antenna */
 	push();
 	stroke('grey');
 	strokeWeight(5);
-	line(50,10, 50, 280 );
+	line(300,10, 300, 280 );
 	pop();
-//arm between antenna and body
+	/* arm */
 	push();
+	stroke('black');
 	strokeWeight(20);
-	line(50,280, 180, 280 );
+	line(100,280, 300, 280 );
 	pop();
-//body
+	/* body */
 	push();
-  fill('black');
+	stroke('black');
+  	fill('black');
 	strokeWeight(20);
 	rect(180,280, 50, 120 );
 	pop();
-//hoop that controls volume
+	/* hoop */
 	push();
 	noFill();
 	stroke('black');
-	ellipse(260,280, 100, 10);
+	ellipse(75,280, 100, 10);
 	pop();
-//position dot
+	/* position dot */
 	push();
+	stroke('black');
 	fill('black');
 	ellipse(mouseX, mouseY, 10,10);
 	pop();
-// Wave for that visually displays
-// the frequency
-  var waveform = fft.waveform();
-  noFill();
-  beginShape();
-  stroke(255,0,0); // waveform is red
-  strokeWeight(1);
-  for (var i = 0; i< waveform.length; i++){
-  var x = map(i, 0, waveform.length, 0, width);
-  var y = map(waveform[i], -1, 1, 0, height);
-  vertex(x,y);
-  }
-  endShape();
-// Test that visually displays
-// the HZ value
-  push();
-  var pitchText = round(pitch) + "HZ";
-  textSize(40);
-  fill("red");
-  text(pitchText, 100, 100);
-  pop();
+	/* Wave for that visually displays the frequency */ 
+  	noFill();
+  	beginShape();
+  	stroke('red'); 
+  	strokeWeight(1);
+	drawWaveform(fft.waveform());
+  	endShape();
+	/* Test that visually displays the HZ value */ 
+  	push();
+  	var pitchText = round(currentPitch) + "HZ";
+  	textSize(40);
+  	fill("red");
+  	text(pitchText, 100, 100);
+  	pop();
 }
-if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) == false ) {
+
 function mouseDragged() {
-//math function that controls pitch
-	pitchRange = (1200-439)/screenWidth;
-	pitch = (screenWidth - mouseX)*pitchRange+439;
-	osc.freq(pitch);
-//math function that controls amplitude
-  volumeRange = (.9)/screenHeight;
-  volume = (screenHeight - mouseY )*volumeRange;
-  osc.amp(volume);
-}
-}
-else if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) == true ){
-function touchMoved() {
-//math function that controls pitch
-  pitchRange = (1200-439)/screenWidth;
-  pitch = (screenWidth - touchX)*pitchRange+439;
-  osc.freq(pitch);
-//math function that controls amplitude
-  volumeRange = (.9)/screenHeight;
-  volume = (screenHeight - touchY )*volumeRange;
-  osc.amp(volume);
-}
-}
-function pitchEnd(){
-//mouse event that turns off the oscillator
-	osc.freq(0);
+	yPerc = ( mouseX / screenWidth ) * 100;  
+	pitchPerc = 100 / yPerc;
+	currentPitch = maxPitch / pitchPerc;
+
+	ampRange = (.9) / screenHeight;
+  	amplitude = (screenHeight - mouseY ) * ampRange;
+  	
+	osc.freqNode.value = currentPitch;
+  	osc.output.gain.value = amplitude;
 }
 
+function mouseReleased() {
+	osc.freqNode.value = 0;
+}
 
+function resizePlayArea() {
+	$(window).resize(function() {
+		resizeCanvas(screenWidth, screenHeight);
+	});
+}
 
-
-
-
-
-
-
-
-
+function drawWaveform(waveform) {
+	var x, y;
+	for (var i = 0; i< waveform.length; i++){
+	  	x = map(i, 0, waveform.length, 0, width);
+	  	y = map(waveform[i], -1, 1, 0, height);
+	  	vertex(x,y);
+	}
+}
