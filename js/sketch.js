@@ -1,14 +1,19 @@
-var fft, osc, canvas, pitch = 100;
+var fft, osc, canvas, currentPitch, minPitch = 0, maxPitch = 3000;
 
 var screenWidth = $(window).width(),
 	screenHeight = $(window).height();
+
+$(window).resize(function() {
+	screenWidth = $(window).width();
+	screenHeight = $(window).height();
+});
 
 /* Initiate */
 function setup() {
 	canvas = createCanvas( screenWidth, screenHeight, P2D);
 	noCursor();
 
-	osc = new p5.Oscillator(100);
+	osc = new p5.Oscillator(minPitch);
 	osc.start();
 
 	canvas.mousePressed( mouseDragged );
@@ -25,13 +30,13 @@ function draw(){
 	push();
 	stroke('grey');
 	strokeWeight(5);
-	line(50,10, 50, 280 );
+	line(300,10, 300, 280 );
 	pop();
 	/* arm */
 	push();
 	stroke('black');
 	strokeWeight(20);
-	line(50,280, 180, 280 );
+	line(100,280, 300, 280 );
 	pop();
 	/* body */
 	push();
@@ -44,7 +49,7 @@ function draw(){
 	push();
 	noFill();
 	stroke('black');
-	ellipse(260,280, 100, 10);
+	ellipse(75,280, 100, 10);
 	pop();
 	/* position dot */
 	push();
@@ -61,7 +66,7 @@ function draw(){
   	endShape();
 	/* Test that visually displays the HZ value */ 
   	push();
-  	var pitchText = round(pitch) + "HZ";
+  	var pitchText = round(currentPitch) + "HZ";
   	textSize(40);
   	fill("red");
   	text(pitchText, 100, 100);
@@ -69,13 +74,14 @@ function draw(){
 }
 
 function mouseDragged() {
-	pitchRange = ( 800 - 439 ) / screenHeight;
-	pitch = ( screenHeight - mouseY ) * pitchRange + 439;
+	yPerc = ( mouseX / screenWidth ) * 100;  
+	pitchPerc = 100 / yPerc;
+	currentPitch = maxPitch / pitchPerc;
 
-	ampRange = (.9) / screenWidth;
-  	amplitude = (screenWidth - mouseX ) * ampRange;
+	ampRange = (.9) / screenHeight;
+  	amplitude = (screenHeight - mouseY ) * ampRange;
   	
-	osc.freqNode.value = pitch;
+	osc.freqNode.value = currentPitch;
   	osc.output.gain.value = amplitude;
 }
 
@@ -85,7 +91,7 @@ function mouseReleased() {
 
 function resizePlayArea() {
 	$(window).resize(function() {
-		resizeCanvas($(window).width(), $(window).height());
+		resizeCanvas(screenWidth, screenHeight);
 	});
 }
 
