@@ -6,6 +6,7 @@ var screenWidth = $(window).width(),
 /* Initiate */
 function setup() {
 	canvas = createCanvas( screenWidth, screenHeight, P2D);
+	noCursor();
 
 	osc = new p5.Oscillator(100);
 	osc.start();
@@ -16,6 +17,55 @@ function setup() {
 	fft = new p5.FFT();
 
 	resizePlayArea();
+}
+
+function draw(){
+	background("rgba(380,380,380,.5)");
+	/* antenna */
+	push();
+	stroke('grey');
+	strokeWeight(5);
+	line(50,10, 50, 280 );
+	pop();
+	/* arm */
+	push();
+	stroke('black');
+	strokeWeight(20);
+	line(50,280, 180, 280 );
+	pop();
+	/* body */
+	push();
+	stroke('black');
+  	fill('black');
+	strokeWeight(20);
+	rect(180,280, 50, 120 );
+	pop();
+	/* hoop */
+	push();
+	noFill();
+	stroke('black');
+	ellipse(260,280, 100, 10);
+	pop();
+	/* position dot */
+	push();
+	stroke('black');
+	fill('black');
+	ellipse(mouseX, mouseY, 10,10);
+	pop();
+	/* Wave for that visually displays the frequency */ 
+  	noFill();
+  	beginShape();
+  	stroke('red'); 
+  	strokeWeight(1);
+	drawWaveform(fft.waveform());
+  	endShape();
+	/* Test that visually displays the HZ value */ 
+  	push();
+  	var pitchText = round(pitch) + "HZ";
+  	textSize(40);
+  	fill("red");
+  	text(pitchText, 100, 100);
+  	pop();
 }
 
 function mouseDragged() {
@@ -29,7 +79,7 @@ function mouseDragged() {
   	osc.output.gain.value = amplitude;
 }
 
-function mouseReleased(){
+function mouseReleased() {
 	osc.freqNode.value = 0;
 }
 
@@ -39,57 +89,11 @@ function resizePlayArea() {
 	});
 }
 
-// draw the assets
-function draw(){
-//background
-	background("rgba(380,380,380,.5)");
-//antenna
-	push();
-	stroke('grey');
-	strokeWeight(5);
-	line(50,10, 50, 280 );
-	pop();
-//arm between antenna and body
-	push();
-	strokeWeight(20);
-	line(50,280, 180, 280 );
-	pop();
-//body
-	push();
-  fill('black');
-	strokeWeight(20);
-	rect(180,280, 50, 120 );
-	pop();
-//hoop that controls volume
-	push();
-	noFill();
-	stroke('black');
-	ellipse(260,280, 100, 10);
-	pop();
-//position dot
-	push();
-	fill('black');
-	ellipse(mouseX, mouseY, 10,10);
-	pop();
-// Wave for that visually displays
-// the frequency
-  var waveform = fft.waveform();
-  noFill();
-  beginShape();
-  stroke(255,0,0); // waveform is red
-  strokeWeight(1);
-  for (var i = 0; i< waveform.length; i++){
-  var x = map(i, 0, waveform.length, 0, width);
-  var y = map(waveform[i], -1, 1, 0, height);
-  vertex(x,y);
-  }
-  endShape();
-// Test that visually displays
-// the HZ value
-  push();
-  var pitchText = round(pitch) + "HZ";
-  textSize(40);
-  fill("red");
-  text(pitchText, 100, 100);
-  pop();
+function drawWaveform(waveform) {
+	var x, y;
+	for (var i = 0; i< waveform.length; i++){
+	  	x = map(i, 0, waveform.length, 0, width);
+	  	y = map(waveform[i], -1, 1, 0, height);
+	  	vertex(x,y);
+	}
 }
